@@ -29,12 +29,10 @@ RUN apt-get update \
     && make install \
     && cd .. \
     && rm -r laz-perf \
-    && git clone https://github.com/pgpointcloud/pointcloud \
+    && git clone -b build_cmake https://github.com/sirokujira/pointcloud \
     && cd pointcloud \
-    && ./autogen.sh \
-    && ./configure --with-lazperf=/usr/local --with-pgconfig=/usr/lib/postgresql/${POSTGRES_VERSION}/bin/pg_config CFLAGS="-Wall -Werror -O2 -g" \
-    && make \
-    && make install \
+    && cmake -H. -Bbuild \
+    && cmake --build build --target install \
     && apt-get purge -y --auto-remove \
         git \
         ca-certificates \

@@ -1,14 +1,16 @@
 
 set ( PC_SOURCES
-        hashtable.c 
-        stringbuffer.c      
+        hashtable.c
+        lazperf_adapter.cpp
+	stringbuffer.c      
         pc_bytes.c       
         pc_dimstats.c      
         pc_filter.c    
         pc_mem.c 
         pc_patch.c
         pc_patch_dimensional.c
-        pc_patch_ght.c
+        pc_patch_lazperf.c	
+        #pc_patch_ght.c
         pc_patch_uncompressed.c
         pc_point.c
         pc_pointlist.c
@@ -19,8 +21,10 @@ set ( PC_SOURCES
         )
 
 set ( PC_HEADERS
-        hashtable.h           
-        stringbuffer.h    
+        hashtable.h
+	lazperf_adapter.h        
+	lazperf_adapter.hpp
+	stringbuffer.h    
         pc_api.h  
         pc_api_internal.h
         pc_config.h
@@ -41,6 +45,12 @@ if (LIBGHT_FOUND)
   target_link_libraries (libpc-static ght)
 endif (LIBGHT_FOUND)
 
+#add_subdirectory (cunit)
 
-add_subdirectory (cunit)
+set_property(TARGET libpc-static PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+install(TARGETS libpc-static EXPORT ${targets_export_name}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 

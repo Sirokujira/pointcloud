@@ -1,0 +1,118 @@
+# ------------------------------------------------------------------------------------
+# Helper to use PGPOINTCLOUD from outside project
+#
+# PGPOINTCLOUD_FOUND
+# PGPOINTCLOUD_INCLUDE_DIRS
+# PGPOINTCLOUD_LIBRARY_DIRS
+# PGPOINTCLOUD_LIBRARIES
+# PGPOINTCLOUD_DEFINITIONS
+#------------------------------------------------------------------------------------
+#  Usage from an external project:
+#    In your CMakeLists.txt, add these lines:
+#
+#    find_package(pgpointcloud REQUIRED)
+#    target_link_libraries(MY_TARGET_NAME PUBLIC pgpointcloud::pgpointcloud)
+
+@PACKAGE_INIT@
+
+# The C and C++ flags added to the cmake-configured flags.
+set(PGPOINTCLOUD_REQUIRED_C_FLAGS "@PGPOINTCLOUD_REQUIRED_C_FLAGS@")
+set(PGPOINTCLOUD_REQUIRED_CXX_FLAGS "@PGPOINTCLOUD_REQUIRED_CXX_FLAGS@")
+
+# The version number
+set(PGPOINTCLOUD_MAJOR_VERSION "@PGPOINTCLOUD_MAJOR_VERSION@")
+set(PGPOINTCLOUD_MINOR_VERSION "@PGPOINTCLOUD_MINOR_VERSION@")
+set(PGPOINTCLOUD_PATCH_VERSION "@PGPOINTCLOUD_PATCH_VERSION@")
+
+# Legacy (for backwards compatibility)
+set(PGPOINTCLOUD_BUILD_VERSION "${PGPOINTCLOUD_PATCH_VERSION}")
+
+# Configured settings
+#set(PGPOINTCLOUD_BUILD_SHARED_LIBS "@BUILD_SHARED_LIBS@")
+#set(PGPOINTCLOUD_USE_ITK_GDCM "@USE_ITK_GDCM@")
+
+set_and_check(PGPOINTCLOUD_CMAKE_DIR "@CMAKE_INSTALL_PREFIX@/lib/cmake/@PROJECT_NAME@")
+
+# support cmake default package
+include(FindPackageHandleStandardArgs)
+
+# use _pgpointcloud_tiny_process
+find_package(Threads REQUIRED QUIET)
+
+# Set default policy behavior similar to minimum requirement version
+# cmake_policy(VERSION 3.8)
+
+# explicitly set policies we already support in newer cmake versions
+if(POLICY CMP0074)
+  # TODO: update *_ROOT variables to be PGPOINTCLOUD_*_ROOT or equivalent.
+  # CMP0074 directly affects how Find* modules work and *_ROOT variables.  Since
+  # this is a config file that will be consumed by parent projects with (likely)
+  # NEW behavior, we need to push a policy stack.
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
+# https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html
+
+### ---[ Find PGPOINTCLOUD
+if (pgpointcloud_FIND_QUIETLY) 
+  set(QUIET_OR_REQUIRED_OPTION "QUIET")
+elseif (pgpointcloud_FIND_REQUIRED) 
+  set(QUIET_OR_REQUIRED_OPTION "REQUIRED")
+else ()
+  set(QUIET_OR_REQUIRED_OPTION "")
+endif()
+
+# set original package cmake setting
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH} @PGPOINTCLOUD_CMAKE_DIR@")
+
+# Provide all our library targets to users.
+# include("${PGPOINTCLOUD_CMAKE_DIR}/module/Finddebug_assert.cmake")
+# include("${PGPOINTCLOUD_CMAKE_DIR}/module/Findtype_safe.cmake")
+
+message(STATUS ${PGPOINTCLOUD_ROOT})
+# check whether PGPOINTCLOUDConfig.cmake is found into a PGPOINTCLOUD installation or in a build tree
+if(EXISTS "${PGPOINTCLOUD_ROOT}/include/pgpointcloud_config.h")
+  # Found a PGPOINTCLOUD installation
+  message(STATUS "Found a PGPOINTCLOUD installation")
+  set(PGPOINTCLOUD_CONF_INCLUDE_DIR "${PGPOINTCLOUD_ROOT}/include")
+  set(PGPOINTCLOUD_LIBRARY_DIRS "${PGPOINTCLOUD_ROOT}/lib")
+  set(PGPOINTCLOUD_LIBRARIES "pgpointcloud;_pgpointcloud_tiny_process;_pgpointcloud_libclang")
+  # set(PGPOINTCLOUD_DEFINITIONS
+else()
+  message(STATUS "PGPOINTCLOUD can not be found on this machine")
+endif()
+
+# Get the current directory
+message(STATUS ${CMAKE_CURRENT_LIST_FILE})
+get_filename_component(PGPOINTCLOUD_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+# The location of the "use" file.
+#set(PGPOINTCLOUD_USE_FILE "${PGPOINTCLOUD_CMAKE_DIR}/UsePGPOINTCLOUD.cmake")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT TARGET Event AND NOT @PROJECT_NAME@_BINARY_DIR)
+  include("${PGPOINTCLOUD_CMAKE_DIR}/@PROJECT_NAME@-targets.cmake")
+endif()
+
+#set a suffix for debug libraries
+set(PGPOINTCLOUD_DEBUG_SUFFIX "@CMAKE_DEBUG_POSTFIX@")
+set(PGPOINTCLOUD_RELEASE_SUFFIX "@CMAKE_RELEASE_POSTFIX@")
+
+# Compute paths
+set_and_check(PGPOINTCLOUD_INCLUDE_DIRS   "@CMAKE_INSTALL_FULL_INCLUDEDIR@" )
+set_and_check(PGPOINTCLOUD_LIBRARY_DIRS   "@CMAKE_INSTALL_PREFIX@/lib")
+#set_and_check(PGPOINTCLOUD_ICONS_DIR      "@CMAKE_INSTALL_PREFIX@/share/icons" )
+#set_and_check(PGPOINTCLOUD_CONFIG_DIR     "${installedPrefix}/@CONFIG_INSTALL_DIR@" )
+
+# These are IMPORTED targets created by @PROJECT_NAME@-targets.cmake
+# set(PGPOINTCLOUD_LIBRARIES      "pgpointcloud;_pgpointcloud_tiny_process;_pgpointcloud_libclang")
+set(PGPOINTCLOUD_LIBRARIES      @PGPOINTCLOUD_LIBRARIES@)
+
+#message(STATUS ${PGPOINTCLOUD_LIBRARY_DIRS})
+#message(STATUS ${PGPOINTCLOUD_LIBRARIES})
+#message(STATUS ${PGPOINTCLOUD_DEBUG_ASSERT_INCLUDE_DIRS})
+#message(STATUS ${PGPOINTCLOUD_TYPE_SAFE_INCLUDE_DIRS})
+
+include(${CMAKE_CURRENT_LIST_DIR}/@targets_export_name@.cmake)
+check_required_components(pgpointcloud)
+
